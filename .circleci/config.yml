@@ -1,3 +1,5 @@
+version: 2
+
 jobs:
   build:
     docker:
@@ -18,14 +20,15 @@ jobs:
           python manage.py test taskManager
 
   release:
-    machine: true                                        # What is this for?
+    machine: true
     steps:
       - checkout
-
-      - run: |
-          echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
-          docker build -t $DOCKER_USERNAME/django.nv .   # Build the application into Docker image
-          docker push $DOCKER_USERNAME/django.nv         # Push the image into registry
+      - run:
+          name: Docker Login, Build, and Push
+          command: |
+            echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+            docker build -t $DOCKER_USERNAME/django.nv .
+            docker push $DOCKER_USERNAME/django.nv
 
   integration:
     docker:
@@ -51,8 +54,13 @@ workflows:
     jobs:
       - build
       - test
-      - release
-      - integration
+      - release:
+          requires:
+            - build
+            - test
+      - integration:
+          requires:
+            - release
       - prod:
           type: approval
           requires:
