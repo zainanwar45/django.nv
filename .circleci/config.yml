@@ -1,4 +1,5 @@
 jobs:
+echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
   build:
     docker:
       - image: python:3.6                   # similar to "image" in GitLab
